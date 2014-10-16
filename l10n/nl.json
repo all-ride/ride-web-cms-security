@@ -1,0 +1,19 @@
+{
+    "button.register": "Registreren",
+    "error.user.or.email.required": "Gelieve een gebruikersnaam of e-mailadres op te geven",
+    "label.message": "Boodschap",
+    "label.message.password.description": "Boodschap voor je reset mail. Je kan de volgende variabelen gebruiken: [[username]], [[name]], [[email]] en [[url]]",
+    "label.login.authenticated": "Als een gebruiker ingelogd is: ",
+    "label.login.redirect.referer": "Redirect naar de afkomst",
+    "label.login.redirect.node": "Redirect naar een node",
+    "label.login.render": "Render de widget",
+    "label.login.nothing": "Doe niets",
+    "label.or": "of",
+    "label.subject": "Onderwerp",
+    "label.subject.password.description": "Onderwerp van je reset mail",
+    "widget.login": "Inloggen",
+    "widget.logout": "Uitloggen",
+    "widget.password": "Wachtwoord vergeten",
+    "widget.profile": "Profiel",
+    "widget.register": "Registreren"
+}
