@@ -1,0 +1,24 @@
+{
+    "dependencies": [
+        {
+            "interfaces": "ride\\library\\cms\\widget\\Widget",
+            "class": "ride\\web\\cms\\controller\\widget\\PasswordWidget",
+            "id": "password"
+        },
+        {
+            "interfaces": "ride\\library\\cms\\widget\\Widget",
+            "class": "ride\\web\\cms\\controller\\widget\\ProfileWidget",
+            "id": "profile"
+        },
+        {
+            "interfaces": "ride\\library\\cms\\widget\\Widget",
+            "class": "ride\\web\\cms\\controller\\widget\\LoginWidget",
+            "id": "login"
+        },
+        {
+            "interfaces": "ride\\library\\cms\\widget\\Widget",
+            "class": "ride\\web\\cms\\controller\\widget\\LogoutWidget",
+            "id": "logout"
+        }
+    ]
+}
