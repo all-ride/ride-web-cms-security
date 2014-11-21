@@ -35,7 +35,7 @@ class LoginWidget extends AbstractWidget {
      * Path to the resource of the template
      * @var string
      */
-    const TEMPLATE = 'cms/widget/security/login';
+    const TEMPLATE_NAMESPACE = 'cms/widget/security';
 
     /**
      * Name of the authenticated property
@@ -166,7 +166,7 @@ class LoginWidget extends AbstractWidget {
             $urls[$index] = $this->getUrl($id);
         }
 
-        $this->setTemplateView(self::TEMPLATE, array(
+        $this->setTemplateView($this->getTemplate(static::TEMPLATE_NAMESPACE . '/login'), array(
             'form' => $form->getView(),
             'action' => $this->properties->getNode()->getUrl($this->locale, $this->request->getBaseScript()),
             'referer' => $this->getReferer(),
@@ -240,6 +240,14 @@ class LoginWidget extends AbstractWidget {
             'label' => $translator->translate('label.node'),
             'options' => $this->getNodeList($nodeModel),
         ));
+        $form->addRow(self::PROPERTY_TEMPLATE, 'select', array(
+            'label' => $translator->translate('label.template'),
+            'description' => $translator->translate('label.template.widget.description'),
+            'options' => $this->getAvailableTemplates(static::TEMPLATE_NAMESPACE, self::NAME),
+            'validators' => array(
+                'required' => array(),
+            )
+        ));
         $form->setValidationConstraint($validationConstraint);
 
         $form = $form->build();
@@ -255,6 +263,7 @@ class LoginWidget extends AbstractWidget {
 
                 $this->properties->setWidgetProperty(self::PROPERTY_AUTHENTICATED, $data[self::PROPERTY_AUTHENTICATED]);
                 $this->properties->setWidgetProperty(self::PROPERTY_NODE, $data[self::PROPERTY_NODE]);
+                $this->setTemplate($data[self::PROPERTY_TEMPLATE]);
 
                 return true;
             } catch (ValidationException $exception) {
@@ -262,7 +271,7 @@ class LoginWidget extends AbstractWidget {
             }
         }
 
-        $this->setTemplateView('cms/widget/security/login.properties', array(
+        $this->setTemplateView('cms/widget/security/properties.login', array(
             'form' => $form->getView(),
         ));
 
