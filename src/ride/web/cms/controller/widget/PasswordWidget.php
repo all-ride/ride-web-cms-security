@@ -6,12 +6,10 @@ use ride\library\cms\node\NodeModel;
 use ride\library\http\Response;
 use ride\library\router\Route;
 use ride\library\validation\exception\ValidationException;
-use ride\library\validation\ValidationError;
 
-use ride\web\base\form\PasswordRequestComponent;
 use ride\web\base\form\PasswordResetComponent;
 use ride\web\base\service\security\PasswordResetService;
-
+use ride\web\cms\service\security\mail\TextMailRenderer;
 
 /**
  * Widget to reset a users password
@@ -31,16 +29,10 @@ class PasswordWidget extends AbstractSecurityWidget {
 	const ICON = 'img/cms/widget/password.png';
 
     /**
-     * Path to the template to ask for a password reset
+     * Namespace for the templates of this widget
      * @var string
      */
-    const TEMPLATE_RESET = 'cms/widget/security/password.reset';
-
-    /**
-     * Path to the template to ask for a new password
-     * @var string
-     */
-    const TEMPLATE_NEW = 'cms/widget/security/password.new';
+    const TEMPLATE_NAMESPACE = 'cms/widget/security';
 
     /**
      * Instance of the password reset service
@@ -58,17 +50,6 @@ class PasswordWidget extends AbstractSecurityWidget {
     }
 
     /**
-     * Gets the templates used by this widget
-     * @return array Array with the resource names of the templates
-     */
-    public function getTemplates() {
-        return array(
-            self::TEMPLATE_RESET,
-            self::TEMPLATE_NEW,
-        );
-    }
-
-    /**
      * Gets the additional sub routes for this widget
      * @return array|null Array with a route path as key and the action method
      * as value
@@ -80,25 +61,18 @@ class PasswordWidget extends AbstractSecurityWidget {
     }
 
     /**
-     * Action to ask for the user and send a mail with the password reset URL
+     * Action to request a password reset
+     * @param \ride\web\base\service\PasswordResetService $service
      * @return null
      */
     public function indexAction(PasswordResetService $service) {
-        $translator = $this->getTranslator();
-
-        $data = array();
-
-        $user = $this->getUser();
-        if ($user) {
-            $data['user'] = array(
-                'username' => $user->getUserName(),
-            );
-        }
-
-        $form = $this->createFormBuilder($data);
-        $form->addRow('user', 'component', array(
-            'component' => new PasswordRequestComponent(),
-            'embed' => true,
+        $form = $this->createFormBuilder();
+        $form->setId('form-password-request');
+        $form->addRow('email', 'email', array(
+            'label' => $this->getTranslator()->translate('label.email'),
+            'validators' => array(
+                'required' => array(),
+            ),
         ));
         $form = $form->build();
 
@@ -108,12 +82,24 @@ class PasswordWidget extends AbstractSecurityWidget {
 
                 $data = $form->getData();
 
-                $user = $service->lookupUser($data['user']['username'], $data['user']['email']);
+                $user = $service->lookupUser($data['email']);
                 if ($user) {
-                    $service->requestPasswordReset($user);
-                }
+                    $message = $this->getMessage();
+                    if ($message) {
+                        $mailRenderer = new TextMailRenderer();
+                        $mailRenderer->setText(nl2br($message));
+                        $mailRenderer->setUrl($this->getUrl('password.reset', array(
+                            'user' => '%user%',
+                            'time' => '%time%',
+                        )));
 
-                $this->addSuccess('success.user.password.mail');
+                        $service->setMailRenderer($mailRenderer);
+                    }
+
+                    $service->requestPasswordReset($user, $this->getSubject());
+
+                    $this->addSuccess('success.user.password.mail');
+                }
 
                 $referer = $this->request->getQueryParameter('referer');
                 if (!$referer) {
@@ -128,9 +114,12 @@ class PasswordWidget extends AbstractSecurityWidget {
             }
         }
 
-        $this->setTemplateView(self::TEMPLATE_RESET, array(
+        $view = $this->setTemplateView($this->getTemplate(static::TEMPLATE_NAMESPACE . '/password.request', 'request'), array(
             'form' => $form->getView(),
+            'referer' => $this->request->getQueryParameter('referer'),
         ));
+
+        $form->processView($view);
     }
 
     /**
@@ -168,7 +157,7 @@ class PasswordWidget extends AbstractSecurityWidget {
                 // redirect to the redirect node of the login widget with the root as fallback
                 $url = null;
 
-                $nodes = $nodeModel->getNodesForWidget('login');
+                $nodes = $nodeModel->getNodesForWidget('login', $this->properties->getNode()->getRootNodeId());
                 if ($nodes) {
                     $node = reset($nodes);
                     $widgetProperties = $node->getWidgetProperties($node->getWidgetId());
@@ -191,7 +180,7 @@ class PasswordWidget extends AbstractSecurityWidget {
         	}
         }
 
-        $this->setTemplateView(self::TEMPLATE_NEW, array(
+        $view = $this->setTemplateView($this->getTemplate(static::TEMPLATE_NAMESPACE . '/password.reset', 'reset'), array(
             'form' => $form->getView(),
         ));
     }
@@ -221,15 +210,47 @@ class PasswordWidget extends AbstractSecurityWidget {
 
         $data = array(
             'subject' => $this->getSubject(),
+            'message' => $this->getMessage(),
+            'template_index' => $this->getTemplate(static::TEMPLATE_NAMESPACE . '/password.request', 'request'),
+            'template_reset' => $this->getTemplate(static::TEMPLATE_NAMESPACE . '/password.reset', 'reset'),
         );
 
         $form = $this->createFormBuilder($data);
         $form->addRow('subject', 'string', array(
             'label' => $translator->translate('label.subject'),
-            'description' => $translator->translate('label.subject.password.description'),
+            'description' => $translator->translate('label.subject.security.description'),
+            'filters' => array(
+                'trim' => array(),
+            ),
             'validators' => array(
                 'required' => array(),
             ),
+        ));
+        $form->addRow('message', 'text', array(
+            'label' => $translator->translate('label.message'),
+            'description' => $translator->translate('label.message.security.description'),
+            'attributes' => array(
+                'rows' => 10,
+            ),
+            'filters' => array(
+                'trim' => array(),
+            ),
+        ));
+        $form->addRow(self::PROPERTY_TEMPLATE . '_request', 'select', array(
+            'label' => $translator->translate('label.template.password.request'),
+            'description' => $translator->translate('label.template.widget.description'),
+            'options' => $this->getAvailableTemplates(static::TEMPLATE_NAMESPACE, self::NAME, 'request'),
+            'validators' => array(
+                'required' => array(),
+            )
+        ));
+        $form->addRow(self::PROPERTY_TEMPLATE . '_reset', 'select', array(
+            'label' => $translator->translate('label.template.password.reset'),
+            'description' => $translator->translate('label.template.widget.description'),
+            'options' => $this->getAvailableTemplates(static::TEMPLATE_NAMESPACE, self::NAME, 'reset'),
+            'validators' => array(
+                'required' => array(),
+            )
         ));
 
         $form = $form->build();
@@ -244,6 +265,9 @@ class PasswordWidget extends AbstractSecurityWidget {
                 $data = $form->getData();
 
 	    		$this->setSubject($data['subject']);
+	    		$this->setMessage($data['message']);
+	    		$this->setTemplate($data[self::PROPERTY_TEMPLATE . '_request'], 'request');
+	    		$this->setTemplate($data[self::PROPERTY_TEMPLATE . '_reset'], 'reset');
 
 	    		$this->addInformation('success.preferences.saved');
 
@@ -253,7 +277,7 @@ class PasswordWidget extends AbstractSecurityWidget {
     		}
     	}
 
-        $this->setTemplateView('cms/widget/security/properties', array(
+        $this->setTemplateView('cms/widget/security/properties.password', array(
             'form' => $form->getView(),
         ));
 
