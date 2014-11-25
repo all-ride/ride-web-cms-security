@@ -312,7 +312,8 @@ class LoginWidget extends AbstractWidget {
             case self::AUTHENTICATED_NODE:
                 $nodeId = $this->getRedirectNode();
                 if ($nodeId) {
-                    $node = $nodeModel->getNode($nodeId);
+                    $selfNode = $this->properties->getNode();
+                    $node = $nodeModel->getNode($selfNode->getRootNodeId(), $selfNode->getRevision(), $nodeId);
 
                     $redirectUrl = $node->getUrl($this->locale, $this->request->getBaseScript());
 
