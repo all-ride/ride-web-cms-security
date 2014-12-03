@@ -162,7 +162,7 @@ class PasswordWidget extends AbstractSecurityWidget {
                     $node = reset($nodes);
                     $widgetProperties = $node->getWidgetProperties($node->getWidgetId());
 
-                    if ($widgetProperties->getWidgetProperty(LoginWidget::PROPERTY_REDIRECT) == LoginWidget::REDIRECT_NODE) {
+                    if ($widgetProperties->getWidgetProperty(LoginWidget::PROPERTY_AUTHENTICATED) == LoginWidget::REDIRECT_NODE) {
                         $node = $nodeModel->getNode($widgetProperties->getWidgetProperty(LoginWidget::PROPERTY_NODE));
                         $url = $node->getUrl($this->locale, $this->request->getBaseScript());
                     }
