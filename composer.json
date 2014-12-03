@@ -22,7 +22,8 @@
     },
     "autoload": {
         "psr-0": {
-            "ride\\web\\cms\\controller\\widget": ["src/"]
+            "ride\\web\\cms\\controller\\widget": ["src/"],
+            "ride\\web\\cms\\service\\security\\mail": ["src/"]
         }
     }
 }
