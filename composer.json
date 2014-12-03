@@ -2,7 +2,7 @@
     "name": "ride/web-cms-security",
     "description": "Security widgets for the CMS application of the Ride framework",
     "license": "MIT",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "authors": [
         {
             "name": "Joris Vandeweerd",
@@ -22,7 +22,8 @@
     },
     "autoload": {
         "psr-0": {
-            "ride\\web\\cms\\controller\\widget": ["src/"]
+            "ride\\web\\cms\\controller\\widget": ["src/"],
+            "ride\\web\\cms\\service\\security\\mail": ["src/"]
         }
     }
 }
