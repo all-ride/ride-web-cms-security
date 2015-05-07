@@ -105,6 +105,7 @@ class LoginWidget extends AbstractWidget {
 
         $form = $this->createFormBuilder();
         $form->setId('form-login');
+        $form->setAction('login');
         $form->addRow('username', 'string', array(
             'label' => $translator->translate('label.username'),
             'attributes' => array(

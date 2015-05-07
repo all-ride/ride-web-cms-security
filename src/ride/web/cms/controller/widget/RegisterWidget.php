@@ -12,6 +12,7 @@ class RegisterWidget extends AbstractWidget implements StyleWidget {
         $translator = $this->getTranslator();
 
         $form = $this->createFormBuilder();
+        $form->setAction('register');
         $form->addRow('name', 'string', array(
             'label' => $translator->translate('label.name'),
             'validators' => array(
