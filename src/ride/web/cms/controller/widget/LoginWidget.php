@@ -94,8 +94,6 @@ class LoginWidget extends AbstractWidget {
                     if ($redirectUrl) {
                         $this->response->setRedirect($redirectUrl);
                     }
-
-                    return;
                 case self::AUTHENTICATED_NOTHING:
                     return;
             }
@@ -167,15 +165,17 @@ class LoginWidget extends AbstractWidget {
             }
         }
 
+        $referer = $this->getReferer();
+
         $urls = $this->config->get('system.login.url', array());
         foreach ($urls as $index => $id) {
-            $urls[$index] = $this->getUrl($id);
+            $urls[$index] = $this->getUrl($id) . '?logout=true&referer=' . urlencode($referer);
         }
 
         $this->setTemplateView($this->getTemplate(static::TEMPLATE_NAMESPACE . '/login'), array(
             'form' => $form->getView(),
             'action' => $this->properties->getNode()->getUrl($this->locale, $this->request->getBaseScript()),
-            'referer' => $this->getReferer(),
+            'referer' => $referer,
             'urls' => $urls,
         ));
     }
@@ -354,21 +354,16 @@ class LoginWidget extends AbstractWidget {
 
     /**
      * Gets the referer of the current request
+     * @param string $default
      * @return string
      */
-    protected function getReferer() {
-        $referer = $this->request->getQueryParameter('referer');
-        if ($referer) {
-            return $referer;
-        }
+    protected function getReferer($default = null) {
+        $referer = parent::getReferer($default);
+        if ($referer === null) {
+            $node = $this->properties->getNode()->getRootNode();
 
-        $referer = $this->request->getHeader('Referer');
-        if ($referer) {
-            return $referer;
+            $referer = $node->getUrl($this->locale, $this->request->getBaseScript());
         }
-
-        $node = $this->properties->getNode()->getRootNode();
-        $referer = $node->getUrl($this->locale, $this->request->getBaseScript());
 
         return $referer;
     }
