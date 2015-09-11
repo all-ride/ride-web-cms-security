@@ -83,10 +83,11 @@ class LoginWidget extends AbstractWidget {
      * @return null
      */
     public function indexAction(SecurityManager $securityManager, NodeModel $nodeModel) {
+        $authenticated = $this->getAuthenticated();
+
         $user = $securityManager->getUser();
         if ($user) {
             // user is already logged in
-            $authenticated = $this->getAuthenticated();
             switch ($authenticated) {
                 case self::AUTHENTICATED_REFERER:
                 case self::AUTHENTICATED_NODE:
@@ -165,7 +166,11 @@ class LoginWidget extends AbstractWidget {
             }
         }
 
-        $referer = $this->getReferer();
+        if ($authenticated == self::AUTHENTICATED_REFERER) {
+            $referer = $this->getReferer($this->request->getBaseUrl());
+        } else {
+            $referer = $this->request->getUrl();
+        }
 
         $urls = $this->config->get('system.login.url', array());
         foreach ($urls as $index => $id) {
