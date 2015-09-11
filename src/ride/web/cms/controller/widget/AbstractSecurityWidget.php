@@ -64,26 +64,6 @@ abstract class AbstractSecurityWidget extends AbstractWidget {
     }
 
     /**
-     * Redirects the response to the login page
-     * @param string $default Fall back URL if there is no node with the login widget
-     * @return null
-     */
-    protected function setRedirectToLogin($default = null) {
-    	if (!$default) {
-    		$default = $this->request->getBasePath();
-    	}
-
-    	$nodeModel = $this->zibo->getDependency('joppa\\model\\node\\NodeModel');
-
-        $loginNode = $nodeModel->getNodesForWidget('login', 1);
-        if ($loginNode) {
-            $this->response->setRedirect($this->request->getBaseScript() . '/' . $loginNode->getRoute($this->locale));
-        } else {
-            $this->response->setRedirect($default);
-        }
-    }
-
-    /**
      * Gets the subject of the mail from the properties
      * @return string The subject of the mail
      */
