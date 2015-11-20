@@ -19,5 +19,9 @@
     "widget.logout": "Uitloggen",
     "widget.password": "Wachtwoord vergeten",
     "widget.profile": "Profiel",
-    "widget.register": "Registreren"
+    "widget.register": "Registreren",
+    "permission.cms.widget.password.manage": "Wachtwoord vergeten widget kunnen toevoegen",
+    "permission.cms.widget.profile.manage": "Profiel widget kunnen toevoegen",
+    "permission.cms.widget.login.manage": "Login widget kunnen toevoegen",
+    "permission.cms.widget.logout.manage": "Logout widget kunnen toevoegen"
 }
